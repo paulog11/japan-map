@@ -24,8 +24,12 @@ defineEmits(['update:activeEra'])
 
 const options = [
   { value: 'all', label: 'All' },
+  { value: 'ancient', label: 'Ancient (–710)' },
+  { value: 'classical', label: 'Classical (710–1185)' },
   { value: 'medieval', label: 'Medieval (1185–1615)' },
-  { value: 'edo', label: 'Edo (1603–1868)' }
+  { value: 'edo', label: 'Edo (1603–1868)' },
+  { value: 'modern', label: 'Modern (1868–1945)' },
+  { value: 'postwar', label: 'Postwar (1945–)' }
 ]
 </script>
 
