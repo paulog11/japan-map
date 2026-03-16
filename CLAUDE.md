@@ -1,6 +1,6 @@
 # Japan History Map
 
-Interactive map app that displays significant events in Japanese history as markers on a Leaflet map.
+Interactive map app with two views: (1) significant events in Japanese history as markers on a Leaflet map, and (2) Tokyo's train system with colored rail lines and clickable stations.
 
 ## Tech Stack
 
@@ -12,25 +12,33 @@ Interactive map app that displays significant events in Japanese history as mark
 
 ```
 src/
-  App.vue              — root layout: header, era filter, map
+  App.vue              — root layout: header, view toggle, filters, map
   main.js              — app entry point
-  constants.js         — shared categoryColors, categoryLabels, tileLayers
+  constants.js         — shared categoryColors, categoryLabels, operatorColors, operatorLabels, tileLayers
   style.css            — global styles + Leaflet CSS import
   components/
-    MapView.vue        — Leaflet map, markers, popups, tile layer swapping
-    MapLegend.vue      — color legend overlay (bottom-right of map)
-    EraFilter.vue      — era toggle buttons (top bar)
+    MapView.vue        — Leaflet map, markers, popups, tile layer swapping (history view)
+    MapLegend.vue      — color legend overlay for history view
+    EraFilter.vue      — era toggle buttons (history view)
+    TrainMapView.vue   — Leaflet map, polylines, circle markers (train view)
+    TrainLegend.vue    — operator legend overlay for train view
+    LineFilter.vue     — operator toggle buttons (train view)
   data/
-    events.json        — all historical event data (static JSON, no API)
+    events.json        — historical event data (60 events, static JSON)
+    stations.json      — Tokyo train station data (static JSON)
+    lines.json         — Tokyo rail line metadata + coordinates (static JSON)
 ```
 
 ## Key Conventions
 
+- **View switching**: `activeView` ref in App.vue (`"history"` | `"trains"`). Uses `v-if` to swap between history and train views. No router.
 - **Event data** lives in `src/data/events.json`. Each event has: `id`, `name`, `year`, `era`, `period`, `category`, `description`, `lat`, `lng`, `contemporarySite` (nullable object with `name` and `query` for Google Maps link).
 - **Categories**: `battle`, `political`, `cultural`, `disaster` — colors defined in `constants.js`.
 - **Eras**: `ancient` (pre-710), `classical` (710–1185), `medieval` (1185–1615), `edo` (1603–1868), `modern` (1868–1945), `postwar` (1945–present) — used by the era filter. The filter value `"all"` shows everything. 60 events total (10 per era).
-- **Map language toggle**: swaps tile layer between OSM Japan (Japanese labels) and CartoDB Voyager (English/romanized labels). Controlled via `mapLang` prop (`"ja"` | `"en"`).
-- Popup HTML is built as raw strings in `buildPopup()` inside MapView — Leaflet renders outside Vue's virtual DOM.
+- **Train data**: `stations.json` has `id`, `name`, `nameJa`, `lat`, `lng`, `operator`, `lines[]`. `lines.json` has `id`, `name`, `nameJa`, `operator`, `color`, `coordinates[]`.
+- **Operators**: `jr`, `metro`, `toei`, `private` — colors defined in `constants.js`. Filtered by `activeOperator` in LineFilter.
+- **Map language toggle**: swaps tile layer between OSM Japan (Japanese labels) and CartoDB Voyager (English/romanized labels). Controlled via `mapLang` prop (`"ja"` | `"en"`). Shared across both views.
+- Popup HTML is built as raw strings in `buildPopup()`/`buildStationPopup()` — Leaflet renders outside Vue's virtual DOM.
 
 ## Commands
 

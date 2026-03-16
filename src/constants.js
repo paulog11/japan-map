@@ -12,6 +12,20 @@ export const categoryLabels = {
   disaster: 'Disaster'
 }
 
+export const operatorColors = {
+  jr: '#3da63a',
+  metro: '#0078c8',
+  toei: '#b51e82',
+  private: '#e67e22'
+}
+
+export const operatorLabels = {
+  jr: 'JR East',
+  metro: 'Tokyo Metro',
+  toei: 'Toei Subway',
+  private: 'Private Railways'
+}
+
 export const tileLayers = {
   ja: {
     url: 'https://tile.openstreetmap.jp/{z}/{x}/{y}.png',
