@@ -10,3 +10,8 @@
   height: 100vh;
   width: 100vw;
 }
+
+/* Mute tile layer colors so train lines and markers stand out */
+.leaflet-layer img {
+  filter: saturate(0.4) brightness(1.05);
+}

@@ -1,15 +1,15 @@
 <template>
   <div class="map-legend">
-    <div class="legend-title">Operator</div>
-    <div v-for="(color, operator) in operatorColors" :key="operator" class="legend-item">
-      <span class="legend-dot" :style="{ background: color }" />
-      <span class="legend-label">{{ operatorLabels[operator] }}</span>
+    <div class="legend-title">Lines</div>
+    <div v-for="line in lines" :key="line.id" class="legend-item">
+      <span class="legend-line" :style="{ background: line.color }" />
+      <span class="legend-label">{{ line.name }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { operatorColors, operatorLabels } from '../constants.js'
+import lines from '../data/lines.json'
 </script>
 
 <style scoped>
@@ -24,6 +24,8 @@ import { operatorColors, operatorLabels } from '../constants.js'
   padding: 10px 14px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   pointer-events: none;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .legend-title {
@@ -46,16 +48,16 @@ import { operatorColors, operatorLabels } from '../constants.js'
   margin-bottom: 0;
 }
 
-.legend-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+.legend-line {
+  width: 20px;
+  height: 4px;
+  border-radius: 2px;
   flex-shrink: 0;
-  border: 1px solid rgba(0,0,0,0.15);
 }
 
 .legend-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #333;
+  white-space: nowrap;
 }
 </style>

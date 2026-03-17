@@ -21,7 +21,7 @@ src/
     MapLegend.vue      — color legend overlay for history view
     EraFilter.vue      — era toggle buttons (history view)
     TrainMapView.vue   — Leaflet map, polylines, circle markers (train view)
-    TrainLegend.vue    — operator legend overlay for train view
+    TrainLegend.vue    — per-line color legend overlay for train view
     LineFilter.vue     — operator toggle buttons (train view)
   data/
     events.json        — historical event data (60 events, static JSON)
@@ -35,9 +35,10 @@ src/
 - **Event data** lives in `src/data/events.json`. Each event has: `id`, `name`, `year`, `era`, `period`, `category`, `description`, `lat`, `lng`, `contemporarySite` (nullable object with `name` and `query` for Google Maps link).
 - **Categories**: `battle`, `political`, `cultural`, `disaster` — colors defined in `constants.js`.
 - **Eras**: `ancient` (pre-710), `classical` (710–1185), `medieval` (1185–1615), `edo` (1603–1868), `modern` (1868–1945), `postwar` (1945–present) — used by the era filter. The filter value `"all"` shows everything. 60 events total (10 per era).
-- **Train data**: `stations.json` has `id`, `name`, `nameJa`, `lat`, `lng`, `operator`, `lines[]`. `lines.json` has `id`, `name`, `nameJa`, `operator`, `color`, `coordinates[]`.
-- **Operators**: `jr`, `metro`, `toei`, `private` — colors defined in `constants.js`. Filtered by `activeOperator` in LineFilter.
-- **Map language toggle**: swaps tile layer between OSM Japan (Japanese labels) and CartoDB Voyager (English/romanized labels). Controlled via `mapLang` prop (`"ja"` | `"en"`). Shared across both views.
+- **Train data**: `stations.json` has `id`, `name`, `nameJa`, `lat`, `lng`, `operator`, `lines[]`. `lines.json` has `id`, `name`, `nameJa`, `operator`, `color`, `coordinates[]`. Lines: Yamanote, Chuo Rapid, Chuo-Sobu Local, Ginza, Marunouchi, Oedo, Keio, Keio Inokashira (~120 stations).
+- **Operators**: `jr`, `metro`, `toei`, `private` — colors defined in `constants.js`. Filtered by `activeOperator` in LineFilter. TrainLegend shows individual line names + colors (not operator categories).
+- **Map language toggle**: swaps tile layer between OSM Japan (Japanese labels) and CartoDB Positron (English/romanized labels, gray roads). Controlled via `mapLang` prop (`"ja"` | `"en"`). Shared across both views.
+- **Muted tile styling**: CSS filter `saturate(0.4) brightness(1.05)` on `.leaflet-layer img` in `style.css` mutes road colors so markers and train lines stand out.
 - Popup HTML is built as raw strings in `buildPopup()`/`buildStationPopup()` — Leaflet renders outside Vue's virtual DOM.
 
 ## Commands
