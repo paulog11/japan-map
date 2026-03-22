@@ -1,7 +1,7 @@
 <template>
   <div class="map-wrapper">
     <div ref="mapContainer" class="map-container" />
-    <MapLegend />
+    <MapLegend v-if="historyMode === 'events'" />
   </div>
 </template>
 
@@ -9,6 +9,7 @@
 import { ref, onMounted, watch } from 'vue'
 import L from 'leaflet'
 import events from '../data/events.json'
+import cities from '../data/cities.json'
 import { categoryColors, tileLayers } from '../constants.js'
 import MapLegend from './MapLegend.vue'
 
@@ -20,15 +21,20 @@ const props = defineProps({
   mapLang: {
     type: String,
     required: true
+  },
+  historyMode: {
+    type: String,
+    required: true
   }
 })
 
 const mapContainer = ref(null)
-const markers = ref([])
+const eventMarkers = ref([])
+const cityMarkers = ref([])
 const activeTileLayer = ref(null)
 let map = null
 
-function makeIcon(category) {
+function makeEventIcon(category) {
   const color = categoryColors[category] || '#888'
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="24" height="36">
     <path d="M12 0C5.373 0 0 5.373 0 12c0 9 12 24 12 24s12-15 12-24C24 5.373 18.627 0 12 0z"
@@ -44,7 +50,21 @@ function makeIcon(category) {
   })
 }
 
-function buildPopup(event) {
+function makeCityIcon() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+    <circle cx="16" cy="16" r="14" fill="#6c5ce7" stroke="#fff" stroke-width="2"/>
+    <circle cx="16" cy="16" r="6" fill="#fff" opacity="0.95"/>
+  </svg>`
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -20]
+  })
+}
+
+function buildEventPopup(event) {
   const siteHtml = event.contemporarySite
     ? `<div class="event-site">
         <strong>Visit today:</strong> ${event.contemporarySite.name}
@@ -68,9 +88,32 @@ function buildPopup(event) {
   `
 }
 
-function updateMarkers(era) {
-  markers.value.forEach(({ marker, event }) => {
-    if (era === 'all' || event.era === era) {
+function buildCityPopup(city) {
+  const historicalNote = city.historicalName
+    ? ` <span class="historical-name">(formerly ${city.historicalName})</span>`
+    : ''
+  const paragraphs = city.description.map(p => `<p class="city-para">${p}</p>`).join('')
+  return `
+    <div class="city-popup">
+      <h3>${city.name}${historicalNote}</h3>
+      <div class="city-body">${paragraphs}</div>
+    </div>
+  `
+}
+
+function updateMarkers(era, mode) {
+  const showEvents = mode === 'events'
+
+  eventMarkers.value.forEach(({ marker, event }) => {
+    if (showEvents && (era === 'all' || event.era === era)) {
+      marker.addTo(map)
+    } else {
+      marker.remove()
+    }
+  })
+
+  cityMarkers.value.forEach(({ marker }) => {
+    if (!showEvents) {
       marker.addTo(map)
     } else {
       marker.remove()
@@ -92,15 +135,22 @@ onMounted(() => {
   const { url, attribution } = tileLayers[props.mapLang]
   activeTileLayer.value = L.tileLayer(url, { attribution, maxZoom: 18 }).addTo(map)
 
-  markers.value = events.map(event => {
-    const marker = L.marker([event.lat, event.lng], { icon: makeIcon(event.category) })
-      .bindPopup(buildPopup(event), { maxWidth: 340 })
+  eventMarkers.value = events.map(event => {
+    const marker = L.marker([event.lat, event.lng], { icon: makeEventIcon(event.category) })
+      .bindPopup(buildEventPopup(event), { maxWidth: 340 })
     marker.addTo(map)
     return { marker, event }
   })
+
+  cityMarkers.value = cities.map(city => {
+    const marker = L.marker([city.lat, city.lng], { icon: makeCityIcon() })
+      .bindPopup(buildCityPopup(city), { maxWidth: 400 })
+    return { marker, city }
+  })
 })
 
-watch(() => props.activeEra, updateMarkers)
+watch(() => props.activeEra, era => updateMarkers(era, props.historyMode))
+watch(() => props.historyMode, mode => updateMarkers(props.activeEra, mode))
 watch(() => props.mapLang, swapTileLayer)
 </script>
 
@@ -116,7 +166,7 @@ watch(() => props.mapLang, swapTileLayer)
   height: 100%;
 }
 
-/* Popup styles (not scoped — Leaflet renders popups outside the component) */
+/* Event popup styles */
 .event-popup {
   font-family: system-ui, sans-serif;
   min-width: 240px;
@@ -184,5 +234,42 @@ watch(() => props.mapLang, swapTileLayer)
 
 .maps-link:hover {
   text-decoration: underline;
+}
+
+/* City popup styles */
+.city-popup {
+  font-family: system-ui, sans-serif;
+  min-width: 300px;
+}
+
+.city-popup h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.3;
+}
+
+.historical-name {
+  font-size: 13px;
+  font-weight: 400;
+  color: #666;
+}
+
+.city-body {
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.city-para {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.city-para:last-child {
+  margin-bottom: 0;
 }
 </style>

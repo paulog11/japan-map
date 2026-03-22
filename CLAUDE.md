@@ -25,6 +25,7 @@ src/
     LineFilter.vue     — operator toggle buttons (train view)
   data/
     events.json        — historical event data (60 events, static JSON)
+    cities.json        — Japan's 10 most populous cities with multi-paragraph historical summaries
     stations.json      — Tokyo train station data (static JSON)
     lines.json         — Tokyo rail line metadata + coordinates (static JSON)
 ```
@@ -32,6 +33,8 @@ src/
 ## Key Conventions
 
 - **View switching**: `activeView` ref in App.vue (`"history"` | `"trains"`). Uses `v-if` to swap between history and train views. No router.
+- **History modes**: `historyMode` ref in App.vue (`"events"` | `"cities"`). Toggled by pill buttons in EraFilter. In `"events"` mode, 60 event markers + era filter are shown. In `"cities"` mode, 10 city markers are shown and era filter is hidden. City markers are purple circles; city popups show a scrollable multi-paragraph history.
+- **City data** lives in `src/data/cities.json`. Each city has: `id`, `name`, `nameJa`, `lat`, `lng`, `historicalName` (nullable), `description` (array of paragraph strings, up to 7).
 - **Event data** lives in `src/data/events.json`. Each event has: `id`, `name`, `year`, `era`, `period`, `category`, `description`, `lat`, `lng`, `contemporarySite` (nullable object with `name` and `query` for Google Maps link).
 - **Categories**: `battle`, `political`, `cultural`, `disaster` — colors defined in `constants.js`.
 - **Eras**: `ancient` (pre-710), `classical` (710–1185), `medieval` (1185–1615), `edo` (1603–1868), `modern` (1868–1945), `postwar` (1945–present) — used by the era filter. The filter value `"all"` shows everything. 60 events total (10 per era).

@@ -18,9 +18,9 @@
         {{ mapLang === 'ja' ? 'EN' : '日本語' }}
       </button>
     </header>
-    <EraFilter v-if="activeView === 'history'" v-model:activeEra="activeEra" />
+    <EraFilter v-if="activeView === 'history'" v-model:activeEra="activeEra" v-model:historyMode="historyMode" />
     <LineFilter v-if="activeView === 'trains'" v-model:activeOperator="activeOperator" />
-    <MapView v-if="activeView === 'history'" :activeEra="activeEra" :mapLang="mapLang" />
+    <MapView v-if="activeView === 'history'" :activeEra="activeEra" :mapLang="mapLang" :historyMode="historyMode" />
     <TrainMapView v-if="activeView === 'trains'" :activeOperator="activeOperator" :mapLang="mapLang" />
   </div>
 </template>
@@ -34,6 +34,7 @@ import TrainMapView from './components/TrainMapView.vue'
 
 const activeView = ref('history')
 const activeEra = ref('all')
+const historyMode = ref('events')
 const activeOperator = ref('all')
 const mapLang = ref('ja')
 

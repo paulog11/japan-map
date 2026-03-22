@@ -1,14 +1,28 @@
 <template>
   <div class="era-filter">
-    <span class="era-label">Filter by era:</span>
-    <button
-      v-for="option in options"
-      :key="option.value"
-      :class="['era-btn', { active: activeEra === option.value }]"
-      @click="$emit('update:activeEra', option.value)"
-    >
-      {{ option.label }}
-    </button>
+    <div class="mode-toggle">
+      <button
+        :class="['mode-btn', { active: historyMode === 'events' }]"
+        @click="$emit('update:historyMode', 'events')"
+      >Events</button>
+      <button
+        :class="['mode-btn', { active: historyMode === 'cities' }]"
+        @click="$emit('update:historyMode', 'cities')"
+      >City History</button>
+    </div>
+
+    <template v-if="historyMode === 'events'">
+      <div class="divider" />
+      <span class="era-label">Era:</span>
+      <button
+        v-for="option in options"
+        :key="option.value"
+        :class="['era-btn', { active: activeEra === option.value }]"
+        @click="$emit('update:activeEra', option.value)"
+      >
+        {{ option.label }}
+      </button>
+    </template>
   </div>
 </template>
 
@@ -17,10 +31,14 @@ defineProps({
   activeEra: {
     type: String,
     required: true
+  },
+  historyMode: {
+    type: String,
+    required: true
   }
 })
 
-defineEmits(['update:activeEra'])
+defineEmits(['update:activeEra', 'update:historyMode'])
 
 const options = [
   { value: 'all', label: 'All' },
@@ -41,12 +59,50 @@ const options = [
   padding: 10px 16px;
   background: #1a1a2e;
   border-bottom: 1px solid #2a2a4e;
+  flex-wrap: wrap;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 2px;
+  background: #0d0d1a;
+  border-radius: 5px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.mode-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #888;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.mode-btn:hover {
+  color: #ccc;
+}
+
+.mode-btn.active {
+  background: #6c5ce7;
+  color: #fff;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: #2a2a4e;
+  flex-shrink: 0;
 }
 
 .era-label {
   color: #aaa;
   font-size: 13px;
-  margin-right: 4px;
   white-space: nowrap;
 }
 
@@ -59,6 +115,7 @@ const options = [
   font-size: 13px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 
 .era-btn:hover {
