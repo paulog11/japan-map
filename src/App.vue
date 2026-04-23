@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import EraFilter from './components/EraFilter.vue'
 import LineFilter from './components/LineFilter.vue'
 import MapView from './components/MapView.vue'
@@ -41,6 +41,53 @@ const mapLang = ref('ja')
 function toggleLang() {
   mapLang.value = mapLang.value === 'ja' ? 'en' : 'ja'
 }
+
+function serializeState() {
+  return new URLSearchParams({
+    view: activeView.value,
+    era: activeEra.value,
+    mode: historyMode.value,
+    operator: activeOperator.value,
+    lang: mapLang.value
+  }).toString()
+}
+
+function applyState(params) {
+  if (!params) return
+  const p = new URLSearchParams(params)
+  const view = p.get('view')
+  const era = p.get('era')
+  const mode = p.get('mode')
+  const operator = p.get('operator')
+  const lang = p.get('lang')
+  if (view && ['history', 'trains'].includes(view)) activeView.value = view
+  if (era) activeEra.value = era
+  if (mode && ['events', 'cities'].includes(mode)) historyMode.value = mode
+  if (operator) activeOperator.value = operator
+  if (lang && ['ja', 'en'].includes(lang)) mapLang.value = lang
+}
+
+function persistState() {
+  const s = serializeState()
+  location.hash = s
+  localStorage.setItem('japanMapState', s)
+}
+
+onMounted(() => {
+  const hash = location.hash.slice(1)
+  if (hash && new URLSearchParams(hash).get('view')) {
+    applyState(hash)
+  } else {
+    const saved = localStorage.getItem('japanMapState')
+    if (saved) applyState(saved)
+  }
+})
+
+watch([activeView, activeEra, historyMode, activeOperator, mapLang], persistState)
+
+window.addEventListener('hashchange', () => {
+  applyState(location.hash.slice(1))
+})
 </script>
 
 <style>

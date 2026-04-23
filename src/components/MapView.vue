@@ -1,7 +1,7 @@
 <template>
   <div class="map-wrapper">
     <div ref="mapContainer" class="map-container" />
-    <MapLegend v-if="historyMode === 'events'" />
+    <MapLegend v-if="historyMode === 'events'" :activeCategories="activeCategories" @toggle-category="toggleCategory" />
   </div>
 </template>
 
@@ -10,7 +10,7 @@ import { ref, onMounted, watch } from 'vue'
 import L from 'leaflet'
 import events from '../data/events.json'
 import cities from '../data/cities.json'
-import { categoryColors, tileLayers } from '../constants.js'
+import { categoryColors, categoryLabels, tileLayers } from '../constants.js'
 import MapLegend from './MapLegend.vue'
 
 const props = defineProps({
@@ -32,7 +32,20 @@ const mapContainer = ref(null)
 const eventMarkers = ref([])
 const cityMarkers = ref([])
 const activeTileLayer = ref(null)
+const activeCategories = ref(Object.keys(categoryColors))
 let map = null
+
+function toggleCategory(category) {
+  if (activeCategories.value.includes(category)) {
+    activeCategories.value = activeCategories.value.filter(c => c !== category)
+  } else {
+    activeCategories.value = [...activeCategories.value, category]
+  }
+}
+
+function popupMaxWidth(max) {
+  return Math.min(Math.floor(window.innerWidth * 0.85), max)
+}
 
 function makeEventIcon(category) {
   const color = categoryColors[category] || '#888'
@@ -103,21 +116,17 @@ function buildCityPopup(city) {
 
 function updateMarkers(era, mode) {
   const showEvents = mode === 'events'
+  const cats = activeCategories.value
 
   eventMarkers.value.forEach(({ marker, event }) => {
-    if (showEvents && (era === 'all' || event.era === era)) {
-      marker.addTo(map)
-    } else {
-      marker.remove()
-    }
+    const visible = showEvents && (era === 'all' || event.era === era) && cats.includes(event.category)
+    if (visible) marker.addTo(map)
+    else marker.remove()
   })
 
   cityMarkers.value.forEach(({ marker }) => {
-    if (!showEvents) {
-      marker.addTo(map)
-    } else {
-      marker.remove()
-    }
+    if (!showEvents) marker.addTo(map)
+    else marker.remove()
   })
 }
 
@@ -137,20 +146,23 @@ onMounted(() => {
 
   eventMarkers.value = events.map(event => {
     const marker = L.marker([event.lat, event.lng], { icon: makeEventIcon(event.category) })
-      .bindPopup(buildEventPopup(event), { maxWidth: 340 })
+      .bindPopup(buildEventPopup(event), { maxWidth: popupMaxWidth(340) })
+      .bindTooltip(event.name, { direction: 'top', offset: [0, -32] })
     marker.addTo(map)
     return { marker, event }
   })
 
   cityMarkers.value = cities.map(city => {
     const marker = L.marker([city.lat, city.lng], { icon: makeCityIcon() })
-      .bindPopup(buildCityPopup(city), { maxWidth: 400 })
+      .bindPopup(buildCityPopup(city), { maxWidth: popupMaxWidth(400) })
+      .bindTooltip(city.name, { direction: 'top', offset: [0, -18] })
     return { marker, city }
   })
 })
 
 watch(() => props.activeEra, era => updateMarkers(era, props.historyMode))
 watch(() => props.historyMode, mode => updateMarkers(props.activeEra, mode))
+watch(activeCategories, () => updateMarkers(props.activeEra, props.historyMode))
 watch(() => props.mapLang, swapTileLayer)
 </script>
 

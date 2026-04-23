@@ -59,7 +59,13 @@ const options = [
   padding: 10px 16px;
   background: #1a1a2e;
   border-bottom: 1px solid #2a2a4e;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.era-filter::-webkit-scrollbar {
+  display: none;
 }
 
 .mode-toggle {
@@ -116,6 +122,7 @@ const options = [
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .era-btn:hover {

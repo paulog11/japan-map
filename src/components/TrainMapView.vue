@@ -101,6 +101,7 @@ onMounted(() => {
   stationMarkers.value = stations.map(station => {
     const line = station.lines[0] ? linesById[station.lines[0]] : null
     const color = line ? line.color : operatorColors[station.operator]
+    const tooltipName = props.mapLang === 'ja' ? station.nameJa : station.name
     const marker = L.circleMarker([station.lat, station.lng], {
       radius: 5,
       fillColor: color,
@@ -108,7 +109,8 @@ onMounted(() => {
       color: '#fff',
       weight: 1.5
     })
-      .bindPopup(buildStationPopup(station), { maxWidth: 300 })
+      .bindPopup(buildStationPopup(station), { maxWidth: Math.min(Math.floor(window.innerWidth * 0.85), 300) })
+      .bindTooltip(tooltipName, { direction: 'top', offset: [0, -8] })
       .addTo(map)
     return { marker, station }
   })
@@ -119,6 +121,7 @@ watch(() => props.mapLang, (lang) => {
   swapTileLayer(lang)
   stationMarkers.value.forEach(({ marker, station }) => {
     marker.setPopupContent(buildStationPopup(station))
+    marker.setTooltipContent(lang === 'ja' ? station.nameJa : station.name)
   })
 })
 </script>
